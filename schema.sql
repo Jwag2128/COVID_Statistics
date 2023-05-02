@@ -53,3 +53,50 @@ FROM dbo.CovidData_Deaths
 WHERE LEN(continent)>0 AND new_cases > 0
 GROUP BY date
 ORDER BY 1,2
+
+SELECT SUM(new_cases) as total_cases, SUM(new_deaths) as total_deaths, SUM(new_deaths)/SUM(new_cases)*100 as Death_percentage
+FROM dbo.CovidData_Deaths
+WHERE LEN(continent)>0 AND new_cases > 0
+ORDER BY 1,2
+
+
+-- Total Population vs Vaccinations
+
+SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations 
+FROM dbo.CovidData_Deaths dea
+JOIN dbo.CovidData_Vaccinations vac
+	ON dea.location = vac.location
+	AND dea.date = vac.date
+WHERE LEN(dea.continent)>0
+ORDER BY 2,3
+
+
+-- Rolling Percent of Population Vaccinated
+
+WITH PopVsVac (continent, location, date, population, new_vaccinations, Vaccinations_Rolling) 
+AS 
+(
+SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations, 
+	SUM(vac.new_vaccinations) OVER (PARTITION BY dea.location ORDER BY dea.location, dea.date) AS Vaccinations_Rolling
+FROM dbo.CovidData_Deaths dea
+JOIN dbo.CovidData_Vaccinations vac
+	ON dea.location = vac.location
+	AND dea.date = vac.date
+WHERE LEN(dea.continent)>0
+)
+SELECT *, (Vaccinations_Rolling/population)*100 AS Percent_Vaccinated
+FROM PopVsVac
+WHERE Vaccinations_Rolling > 0
+
+
+-- Future Visualizations
+CREATE VIEW Population_Percent_Vaccinated AS
+SELECT dea.continent, dea.location, dea.date, dea.population, vac.new_vaccinations, 
+	SUM(vac.new_vaccinations) OVER (PARTITION BY dea.location ORDER BY dea.location, dea.date) AS Vaccinations_Rolling
+FROM dbo.CovidData_Deaths dea
+JOIN dbo.CovidData_Vaccinations vac
+	ON dea.location = vac.location
+	AND dea.date = vac.date
+WHERE LEN(dea.continent)>0
+
+SELECT * FROM Population_Percent_Vaccinated
