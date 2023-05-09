@@ -27,6 +27,12 @@ WHERE population > 0
 GROUP BY location, population
 ORDER BY Infected_Percent DESC
 
+SELECT location, population, date, MAX(total_cases) AS Highest_Infection_Count, MAX((total_cases/population))*100 AS Infected_Percent 
+FROM dbo.CovidData_Deaths
+WHERE population > 0
+GROUP BY location, population, date
+ORDER BY Infected_Percent DESC
+
 --Countries with Highest Death Count
 SELECT location, MAX(total_deaths) AS Total_Death_Count 
 FROM dbo.CovidData_Deaths
@@ -100,3 +106,11 @@ JOIN dbo.CovidData_Vaccinations vac
 WHERE LEN(dea.continent)>0
 
 SELECT * FROM Population_Percent_Vaccinated
+
+SELECT location, SUM(new_deaths) as TotalDeathCount
+FROM dbo.CovidData_Deaths
+WHERE LEN(continent)=0
+AND location NOT IN ('World', 'European Union', 'International')
+GROUP BY location
+ORDER BY TotalDeathCount desc
+
