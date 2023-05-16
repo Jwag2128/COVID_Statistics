@@ -114,3 +114,24 @@ AND location NOT IN ('World', 'European Union', 'International')
 GROUP BY location
 ORDER BY TotalDeathCount desc
 
+SELECT location, SUM(new_deaths)/SUM(new_cases)*100 as Death_percentage
+FROM dbo.CovidData_Deaths
+WHERE LEN(continent)=0 AND new_cases > 0
+AND location NOT IN ('World', 'European Union', 'International')
+GROUP BY location
+ORDER BY Death_percentage desc
+
+
+SELECT location, MAX(total_vaccinations) as People_Vaccinated 
+FROM dbo.CovidData_Vaccinations
+WHERE LEN(continent)=0
+AND location NOT IN ('World', 'European Union', 'International')
+GROUP BY location
+ORDER BY People_Vaccinated desc
+
+SELECT location, population
+FROM dbo.CovidData_Deaths
+WHERE population > 0 AND LEN(continent)=0
+AND location NOT IN ('World', 'European Union', 'International')
+GROUP BY location, population
+ORDER BY population DESC
